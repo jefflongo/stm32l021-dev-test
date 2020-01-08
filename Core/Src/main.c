@@ -22,6 +22,7 @@
 #include "main.h"
 
 #include "gpio.h"
+#include "ws281x.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -90,7 +91,7 @@ int main(void) {
     MX_GPIO_Init();
     /* USER CODE BEGIN 2 */
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
+    ws_write((ws_color_t) { 0xFF, 0, 0 });
     /* USER CODE END 2 */
 
     /* Infinite loop */

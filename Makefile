@@ -56,7 +56,8 @@ Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_dma.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
-Core/Src/system_stm32l0xx.c
+Core/Src/system_stm32l0xx.c \
+Core/Src/ws281x.c
 
 # ASM sources
 ASM_SOURCES =  \
