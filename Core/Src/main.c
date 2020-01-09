@@ -91,14 +91,15 @@ int main(void) {
     MX_GPIO_Init();
     /* USER CODE BEGIN 2 */
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
-    ws_write((ws_color_t) { 0xFF, 0, 0 });
+    ws_write((ws_color_t) { 0, 0, 0 });
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
         /* USER CODE END WHILE */
-
+        HAL_Delay(1000);
+        ws_write((ws_color_t) { 0xFF, 0, 0xFF });
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */

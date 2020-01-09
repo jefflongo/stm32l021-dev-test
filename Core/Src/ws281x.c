@@ -25,15 +25,17 @@ void ws_write(const ws_color_t color) {
     for (int i = 0; i < 24; i++) {
         if (data & 1) {
             // High for > 0.35us for 1
-            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+            GPIOC->BSRR = GPIO_PIN_14;
             asm("NOP");
             asm("NOP");
             asm("NOP");
-            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+            asm("NOP");
+            GPIOC->BRR = GPIO_PIN_14;
         } else {
             // High for < 0.35us for 0
-            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+            GPIOC->BSRR = GPIO_PIN_14;
+            asm("NOP");
+            GPIOC->BRR = GPIO_PIN_14;
         }
         data >>= 1;
     }
