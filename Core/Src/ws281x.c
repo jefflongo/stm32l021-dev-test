@@ -16,7 +16,7 @@ static uint32_t convert_rgb(const ws_color_t color) {
 
 void ws_write(const ws_color_t color) {
     // Hold data line low for 50us to reset LED driver
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RGB_GPIO_Port, RGB_Pin, GPIO_PIN_RESET);
     HAL_Delay(50);
 
     // Convert rgb data to custom WS281x format: GRB, MSB first
@@ -25,17 +25,17 @@ void ws_write(const ws_color_t color) {
     for (int i = 0; i < 24; i++) {
         if (data & 1) {
             // High for > 0.35us for 1
-            GPIOC->BSRR = GPIO_PIN_14;
+            GPIOB->BSRR = RGB_Pin;
             asm("NOP");
             asm("NOP");
             asm("NOP");
             asm("NOP");
-            GPIOC->BRR = GPIO_PIN_14;
+            GPIOB->BRR = RGB_Pin;
         } else {
             // High for < 0.35us for 0
-            GPIOC->BSRR = GPIO_PIN_14;
+            GPIOB->BSRR = RGB_Pin;
             asm("NOP");
-            GPIOC->BRR = GPIO_PIN_14;
+            GPIOB->BRR = RGB_Pin;
         }
         data >>= 1;
     }
