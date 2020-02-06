@@ -1,6 +1,8 @@
 #include "stusb4500.h"
 
 #include "i2c.h"
+#include "main.h"
+#include "stm32l0xx_hal.h"
 
 #include <stdint.h>
 
@@ -49,14 +51,14 @@
 #define TO_PDO_VOLTAGE(mV) ((uint32_t)((mV / 50) & 0x03FF) << 10)
 
 // TODO: This doesn't work
-static int send_pd_message(const uint16_t msg) {
-    int ok = I2C_OK;
+// static int send_pd_message(const uint16_t msg) {
+//     int ok = I2C_OK;
 
-    if (ok) ok = i2c_master_write_u16(STUSB_ADDR, TX_HEADER, msg);
-    if (ok) ok = i2c_master_write_u8(STUSB_ADDR, CMD_CTRL, PD_CMD);
+//     if (ok) ok = i2c_master_write_u16(STUSB_ADDR, TX_HEADER, msg);
+//     if (ok) ok = i2c_master_write_u8(STUSB_ADDR, CMD_CTRL, PD_CMD);
 
-    return (ok == I2C_OK) ? STUSB_OK : STUSB_FAILURE;
-}
+//     return (ok == I2C_OK) ? STUSB_OK : STUSB_FAILURE;
+// }
 
 static int reset(void) {
     int ok = I2C_OK;
@@ -73,7 +75,7 @@ static int reset(void) {
     }
 
     // TODO: Necessary? Wait for source to be ready
-    if (ok == I2C_OK) HAL_Delay(27);
+    if (ok == I2C_OK) DELAY(27);
 
     // Disable software reset
     if (ok == I2C_OK) ok = i2c_master_write_u8(STUSB_ADDR, RESET_CTRL, SW_RESET_OFF);
@@ -85,7 +87,7 @@ static int write_pdo(uint16_t current_mA, uint16_t voltage_mV, uint8_t pdo_num) 
     if (pdo_num < 1 || pdo_num > 3) return STUSB_FAILURE;
 
     // Format the sink PDO
-    uint32_t pdo = 0x00000000 | TO_PDO_CURRENT(current_mA) | TO_PDO_VOLTAGE(voltage_mV);
+    uint32_t pdo = TO_PDO_CURRENT(current_mA) | TO_PDO_VOLTAGE(voltage_mV);
 
     // Write the sink PDO
     if (i2c_master_write_u32(STUSB_ADDR, DPM_SNK_PDO1 + 4 * (pdo_num - 1), pdo) != I2C_OK)
@@ -109,7 +111,7 @@ static int negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
         // Extract PDO parameters
         uint16_t pdo_current = FROM_PDO_CURRENT(pdo);
         uint16_t pdo_voltage = FROM_PDO_VOLTAGE(pdo);
-        uint32_t pdo_power = (uint32_t)pdo_current * pdo_voltage / 1000;
+        uint32_t pdo_power = pdo_current * pdo_voltage / 1000;
 
         if (
           PDO_TYPE(pdo) != PDO_TYPE_FIXED || pdo_current < PDO_CURRENT_MIN ||

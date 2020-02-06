@@ -10,14 +10,13 @@ static uint32_t reverse(uint8_t b) {
 }
 
 static uint32_t convert_rgb(const ws_color_t color) {
-    return (reverse(color.b) << 16) | (reverse(color.r) << 8) |
-           reverse(color.g);
+    return (reverse(color.b) << 16) | (reverse(color.r) << 8) | reverse(color.g);
 }
 
 void ws_write(const ws_color_t color) {
     // Hold data line low for 50us to reset LED driver
-    HAL_GPIO_WritePin(RGB_GPIO_Port, RGB_Pin, GPIO_PIN_RESET);
-    HAL_Delay(50);
+    GPIOB->BRR = RGB_Pin;
+    DELAY(50);
 
     // Convert rgb data to custom WS281x format: GRB, MSB first
     uint32_t data = convert_rgb(color);

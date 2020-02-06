@@ -11,4 +11,4 @@ typedef struct {
 
 void ws_write(const ws_color_t color);
 
-#endif /* WS281X_H */
+#endif // WS281X_H

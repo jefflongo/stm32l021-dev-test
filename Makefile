@@ -37,8 +37,13 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Src/ws281x.c \
+Core/Src/stusb4500.c \
 Core/Src/main.c \
 Core/Src/gpio.c \
+Core/Src/i2c.c \
+Core/Src/i2c_impl.c \
+Core/Src/uart.c \
+Core/Src/uart_impl.c \
 Core/Src/stm32l0xx_it.c \
 Core/Src/stm32l0xx_hal_msp.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim.c \
@@ -57,8 +62,6 @@ Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr_ex.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.c \
 Core/Src/system_stm32l0xx.c \
-Core/Src/i2c.c \
-Core/Src/usart.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart.c \
 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_uart_ex.c
 
