@@ -6,7 +6,6 @@
 #include <stdint.h>
 
 #ifdef LOG
-#include <inttypes.h>
 #include <stdio.h>
 #endif
 
@@ -126,10 +125,13 @@ static bool negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
 
 #ifdef LOG
         printf(
-          "Detected Source PDO: %" PRIu16 "mV, %" PRIu16 "mA, %" PRIu32 "mW\r\n",
-          pdo_voltage,
-          pdo_current,
-          pdo_power);
+          "Detected Source PDO: %2d.%03dV, %d.%03dA, %3d.%03dW\r\n",
+          (int)(pdo_voltage / 1000),
+          (int)(pdo_voltage % 1000),
+          (int)(pdo_current / 1000),
+          (int)(pdo_current % 1000),
+          (int)(pdo_power / 1000),
+          (int)(pdo_power % 1000));
 #endif
 
         if (
@@ -146,16 +148,21 @@ static bool negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
 
 #ifdef LOG
     printf(
-      "\r\nSelected optimal PDO based on user parameters: %" PRIu16 "mV - %" PRIu16
-      "mV, >= %" PRIu16 "mA\r\n",
-      PDO_VOLTAGE_MIN,
-      PDO_VOLTAGE_MAX,
-      PDO_CURRENT_MIN);
+      "\r\nSelected optimal PDO based on user parameters: %d.%03dV - %d.%03dV, >= %d.%03dA\r\n",
+      (int)(PDO_VOLTAGE_MIN / 1000),
+      (int)(PDO_VOLTAGE_MIN % 1000),
+      (int)(PDO_VOLTAGE_MAX / 1000),
+      (int)(PDO_VOLTAGE_MAX % 1000),
+      (int)(PDO_CURRENT_MIN / 1000),
+      (int)(PDO_CURRENT_MIN % 1000));
     printf(
-      "Selected PDO: %" PRIu16 "mV, %" PRIu16 "mA, %" PRIu32 "mW\r\n\r\n",
-      opt_pdo_voltage,
-      opt_pdo_current,
-      opt_pdo_power);
+      "Selected PDO: %d.%03dV, %d.%03dA, %d.%03dW\r\n\r\n",
+      (int)(opt_pdo_voltage / 1000),
+      (int)(opt_pdo_voltage % 1000),
+      (int)(opt_pdo_current / 1000),
+      (int)(opt_pdo_current % 1000),
+      (int)(opt_pdo_power / 1000),
+      (int)(opt_pdo_power % 1000));
 #endif
 
     // Push the new PDO
