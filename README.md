@@ -3,10 +3,9 @@
 ### Debugging STM32 in VS Code (Windows):
 
 #### Prerequisites
-- Install [MinGW](http://www.mingw.org/) and [MSYS2](https://www.msys2.org/)
+- Install [MinGW](http://www.mingw.org/)
 - Install [arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads) toolchain and add it to your system PATH
-- Install OpenOCD and add it to your system PATH:
-  - In MSYS2, enter `pacman -S mingw-w64-x86_64-openocd-git`
+- Install [OpenOCD](https://gnutoolchains.com/arm-eabi/openocd/) and add it to your system PATH
 
 #### VS Code Configuration
 - Open `C_Cpp_properties.json` configuration
@@ -26,4 +25,3 @@
 
 #### Building
 The MCU configuration can be generated using [STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html) with the Toolchain / IDE option in the Project Manager set to Makefile. The project can then be built with `mingw32-make`.
-

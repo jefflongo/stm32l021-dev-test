@@ -1,11 +1,12 @@
 #include "uart_impl.h"
 
+#include "board.h"
 #include "stm32l0xx_hal.h"
 #include "uart.h"
 
 static UART_HandleTypeDef huart;
 
-int _uart_init_impl(void) {
+bool _uart_init_impl(void) {
     huart.Instance = USART2;
     huart.Init.BaudRate = 115200;
     huart.Init.WordLength = UART_WORDLENGTH_8B;
@@ -16,17 +17,15 @@ int _uart_init_impl(void) {
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
     huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     huart.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-    return HAL_UART_Init(&huart) == HAL_OK ? UART_OK : UART_FAILURE;
+    return HAL_UART_Init(&huart) == HAL_OK;
 }
 
-int _uart_write_impl(const void* buf, uint16_t len) {
-    return HAL_UART_Transmit(&huart, (uint8_t*)buf, len, HAL_MAX_DELAY) == HAL_OK ? UART_OK
-                                                                                  : UART_FAILURE;
+bool _uart_write_impl(const void* buf, uint16_t len) {
+    return HAL_UART_Transmit(&huart, (uint8_t*)buf, len, HAL_MAX_DELAY) == HAL_OK;
 }
 
-int _uart_read_impl(void* buf, uint16_t len) {
-    return HAL_UART_Receive(&huart, (uint8_t*)buf, len, HAL_MAX_DELAY) == HAL_OK ? UART_OK
-                                                                                 : UART_FAILURE;
+bool _uart_read_impl(void* buf, uint16_t len) {
+    return HAL_UART_Receive(&huart, (uint8_t*)buf, len, HAL_MAX_DELAY) == HAL_OK;
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {

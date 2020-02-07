@@ -1,13 +1,13 @@
-#include "main.h"
-
+#include "board.h"
 #include "gpio.h"
 #include "i2c.h"
 #include "uart.h"
 #include "ws281x.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 
-void SystemClock_Config(void);
+bool SystemClock_Config(void);
 
 int main(void) {
 
@@ -16,17 +16,16 @@ int main(void) {
     SystemClock_Config();
 
     MX_GPIO_Init();
-    // uart_init();
+    uart_init();
     i2c_master_init();
 
     ws_write((ws_color_t) { 0, 0x0F, 0 });
 
     while (1) {
-        HAL_Delay(1000);
     }
 }
 
-void SystemClock_Config(void) {
+bool SystemClock_Config(void) {
     RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
     RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
     RCC_PeriphCLKInitTypeDef PeriphClkInit = { 0 };
@@ -41,7 +40,7 @@ void SystemClock_Config(void) {
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-        Error_Handler();
+        return false;
     }
     /** Initializes the CPU, AHB and APB busses clocks
      */
@@ -53,20 +52,13 @@ void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK) {
-        Error_Handler();
+        return false;
     }
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_I2C1;
     PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
     PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
-        Error_Handler();
+        return false;
     }
-}
-
-void Error_Handler(void) {
-    /* USER CODE BEGIN Error_Handler_Debug */
-    /* User can add his own implementation to report the HAL error return state
-     */
-
-    /* USER CODE END Error_Handler_Debug */
+    return true;
 }

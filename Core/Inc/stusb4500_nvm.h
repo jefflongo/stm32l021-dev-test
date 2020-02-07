@@ -7,10 +7,11 @@
 #ifndef STUSB4500_NVM_H
 #define STUSB4500_NVM_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
-int nvm_flash(void);
-int nvm_read(uint8_t* sectors_out);
-int nvm_verify(void);
+bool nvm_flash(void);
+bool nvm_read(uint8_t* sectors_out);
+bool nvm_verify(void);
 
 #endif // STUSB4500_NVM_H

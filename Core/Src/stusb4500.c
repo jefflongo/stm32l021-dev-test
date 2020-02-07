@@ -1,10 +1,14 @@
 #include "stusb4500.h"
 
+#include "board.h"
 #include "i2c.h"
-#include "main.h"
-#include "stm32l0xx_hal.h"
 
 #include <stdint.h>
+
+#ifdef LOG
+#include <inttypes.h>
+#include <stdio.h>
+#endif
 
 // STUSB4500 i2c address
 #define STUSB_ADDR 0x28
@@ -29,6 +33,9 @@
 #define PRT_MESSAGE_RECEIVED 0x04
 #define SRC_CAPABILITIES_MSG 0x01
 
+// Maximum number of source power profiles
+#define MAX_SRC_PDOS 10
+
 // PD protocol commands, see USB PD spec Table 6-3
 #define PD_CMD 0x26
 #define PD_GET_SRC_CAP 0x0007
@@ -42,6 +49,9 @@
 #endif // USBPD_REV30_SUPPORT
 #define HEADER_NUM_DATA_OBJECTS(header) ((header >> 12) & 0x07)
 
+// See USB PD spec Table 6-9
+#define PDO_SIZE 4
+
 // See USB PD spec Section 7.1.3 and STUSB4500 Section 5.2 Table 16
 #define PDO_TYPE(pdo) ((pdo >> 30) & 0x03)
 #define PDO_TYPE_FIXED 0x00
@@ -50,55 +60,56 @@
 #define TO_PDO_CURRENT(mA) ((mA / 10) & 0x03FF)
 #define TO_PDO_VOLTAGE(mV) ((uint32_t)((mV / 50) & 0x03FF) << 10)
 
-// TODO: This doesn't work
-// static int send_pd_message(const uint16_t msg) {
-//     int ok = I2C_OK;
+/* TODO: This doesn't work, STUSB4500 likely doesn't support this, need to verify
+static bool send_pd_message(const uint16_t msg) {
+    bool ok = true;
 
-//     if (ok) ok = i2c_master_write_u16(STUSB_ADDR, TX_HEADER, msg);
-//     if (ok) ok = i2c_master_write_u8(STUSB_ADDR, CMD_CTRL, PD_CMD);
+    if (ok) ok = i2c_master_write_u16(STUSB_ADDR, TX_HEADER, msg);
+    if (ok) ok = i2c_master_write_u8(STUSB_ADDR, CMD_CTRL, PD_CMD);
 
-//     return (ok == I2C_OK) ? STUSB_OK : STUSB_FAILURE;
-// }
+    return ok;
+}
+*/
 
-static int reset(void) {
-    int ok = I2C_OK;
+static bool reset(void) {
+    bool ok = true;
 
     // Enable software reset
-    if (ok == I2C_OK) ok = i2c_master_write_u8(STUSB_ADDR, RESET_CTRL, SW_RESET_ON);
+    if (ok) ok = i2c_master_write_u8(STUSB_ADDR, RESET_CTRL, SW_RESET_ON);
 
     // Wait for stusb to respond
-    if (ok == I2C_OK) {
+    if (ok) {
         uint8_t res;
         do {
             ok = i2c_master_read_u8(STUSB_ADDR, WHO_AM_I, &res);
-        } while (ok == I2C_OK && res != DEVICE_ID);
+        } while (ok && res != DEVICE_ID);
     }
 
     // TODO: Necessary? Wait for source to be ready
-    if (ok == I2C_OK) DELAY(27);
+    if (ok) DELAY(27);
 
     // Disable software reset
-    if (ok == I2C_OK) ok = i2c_master_write_u8(STUSB_ADDR, RESET_CTRL, SW_RESET_OFF);
+    if (ok) ok = i2c_master_write_u8(STUSB_ADDR, RESET_CTRL, SW_RESET_OFF);
 
-    return (ok == I2C_OK) ? STUSB_OK : STUSB_FAILURE;
+    return ok;
 }
 
-static int write_pdo(uint16_t current_mA, uint16_t voltage_mV, uint8_t pdo_num) {
-    if (pdo_num < 1 || pdo_num > 3) return STUSB_FAILURE;
+static bool write_pdo(uint16_t current_mA, uint16_t voltage_mV, uint8_t pdo_num) {
+    if (pdo_num < 1 || pdo_num > 3) return false;
 
     // Format the sink PDO
     uint32_t pdo = TO_PDO_CURRENT(current_mA) | TO_PDO_VOLTAGE(voltage_mV);
 
     // Write the sink PDO
-    if (i2c_master_write_u32(STUSB_ADDR, DPM_SNK_PDO1 + 4 * (pdo_num - 1), pdo) != I2C_OK)
-        return STUSB_FAILURE;
+    if (!i2c_master_write_u32(STUSB_ADDR, DPM_SNK_PDO1 + PDO_SIZE * (pdo_num - 1), pdo))
+        return false;
 
     // Force a renegotiation
     return reset();
 }
 
-static int negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
-    int ok = STUSB_FAILURE;
+static bool negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
+    bool ok = false;
 
     uint16_t opt_pdo_current = 0;
     uint16_t opt_pdo_voltage = 0;
@@ -113,6 +124,14 @@ static int negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
         uint16_t pdo_voltage = FROM_PDO_VOLTAGE(pdo);
         uint32_t pdo_power = pdo_current * pdo_voltage / 1000;
 
+#ifdef LOG
+        printf(
+          "Detected Source PDO: %" PRIu16 "mV, %" PRIu16 "mA, %" PRIu32 "mW\r\n",
+          pdo_voltage,
+          pdo_current,
+          pdo_power);
+#endif
+
         if (
           PDO_TYPE(pdo) != PDO_TYPE_FIXED || pdo_current < PDO_CURRENT_MIN ||
           pdo_voltage < PDO_VOLTAGE_MIN || pdo_voltage > PDO_VOLTAGE_MAX)
@@ -121,46 +140,59 @@ static int negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
             opt_pdo_current = pdo_current;
             opt_pdo_voltage = pdo_voltage;
             opt_pdo_power = pdo_power;
-            ok = STUSB_OK;
+            ok = true;
         }
     }
 
+#ifdef LOG
+    printf(
+      "\r\nSelected optimal PDO based on user parameters: %" PRIu16 "mV - %" PRIu16
+      "mV, >= %" PRIu16 "mA\r\n",
+      PDO_VOLTAGE_MIN,
+      PDO_VOLTAGE_MAX,
+      PDO_CURRENT_MIN);
+    printf(
+      "Selected PDO: %" PRIu16 "mV, %" PRIu16 "mA, %" PRIu32 "mW\r\n\r\n",
+      opt_pdo_voltage,
+      opt_pdo_current,
+      opt_pdo_power);
+#endif
+
     // Push the new PDO
-    if (ok == STUSB_OK) ok = write_pdo(opt_pdo_current, opt_pdo_voltage, 3);
+    if (ok) ok = write_pdo(opt_pdo_current, opt_pdo_voltage, 3);
 
     return ok;
 }
 
-int stusb_negotiate(void) {
-    uint8_t buffer[40];
+bool stusb_negotiate(void) {
+    uint8_t buffer[MAX_SRC_PDOS * PDO_SIZE];
     uint16_t header;
 
     // Check if cable attached
-    if (i2c_master_read_u8(STUSB_ADDR, PORT_STATUS, buffer) != I2C_OK || !(buffer[0] & ATTACH))
-        return STUSB_FAILURE;
+    if (!i2c_master_read_u8(STUSB_ADDR, PORT_STATUS, buffer) || !(buffer[0] & ATTACH)) return false;
 
     // Soft reset to force source capabilities message transmission
-    if (reset() != STUSB_OK) return STUSB_FAILURE;
+    if (!reset()) return false;
 
     while (1) {
         // Read the port status to look for a source capabilities message
-        if (i2c_master_read_u8(STUSB_ADDR, PRT_STATUS, buffer) != I2C_OK) return STUSB_FAILURE;
+        if (!i2c_master_read_u8(STUSB_ADDR, PRT_STATUS, buffer)) return false;
 
         // Message has not arrived yet
         if (!(buffer[0] & PRT_MESSAGE_RECEIVED)) continue;
 
         // Read message header
-        if (i2c_master_read_u16(STUSB_ADDR, RX_HEADER, &header) != I2C_OK) return STUSB_FAILURE;
+        if (!i2c_master_read_u16(STUSB_ADDR, RX_HEADER, &header)) return false;
 
         // Not a data/source capabilities message, continue waiting
         if (!HEADER_NUM_DATA_OBJECTS(header) || HEADER_MESSAGE_TYPE(header) != SRC_CAPABILITIES_MSG)
             continue;
 
         // Read number of received bytes
-        if (i2c_master_read_u8(STUSB_ADDR, RX_BYTE_CNT, buffer) != I2C_OK) return STUSB_FAILURE;
+        if (!i2c_master_read_u8(STUSB_ADDR, RX_BYTE_CNT, buffer)) return false;
 
         // Check for missing data
-        if (buffer[0] != HEADER_NUM_DATA_OBJECTS(header) * 4) return STUSB_FAILURE;
+        if (buffer[0] != HEADER_NUM_DATA_OBJECTS(header) * PDO_SIZE) return false;
 
         break;
     }
@@ -169,10 +201,9 @@ int stusb_negotiate(void) {
     // WARNING: This must happen very soon after the previous code block is
     // executed. The source will send an accept message which partially
     // overwrites the source capabilities message. Use i2c clock >= 300 kHz
-    if (
-      i2c_master_read(STUSB_ADDR, RX_DATA_OBJ, buffer, HEADER_NUM_DATA_OBJECTS(header) * 4) !=
-      I2C_OK)
-        return STUSB_FAILURE;
+    if (!i2c_master_read(
+          STUSB_ADDR, RX_DATA_OBJ, buffer, HEADER_NUM_DATA_OBJECTS(header) * PDO_SIZE))
+        return false;
 
     // Find and negotiate the optimal PDO, if any
     // NOTE: vbus will be momentarily lost

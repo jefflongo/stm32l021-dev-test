@@ -21,7 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l0xx_it.h"
 
-#include "main.h"
+#include "board.h"
 #include "stusb4500.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -142,7 +142,7 @@ void EXTI4_15_IRQHandler(void) {
     /* USER CODE BEGIN EXTI4_15_IRQn 0 */
     HAL_Delay(50);
     if (HAL_GPIO_ReadPin(BTN_GPIO_Port, BTN_Pin) == GPIO_PIN_RESET) {
-        HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+        // HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
         stusb_negotiate();
     }
     /* USER CODE END EXTI4_15_IRQn 0 */

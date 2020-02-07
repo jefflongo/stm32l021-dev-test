@@ -1,5 +1,6 @@
 #include "ws281x.h"
 
+#include "board.h"
 #include "gpio.h"
 
 static uint32_t reverse(uint8_t b) {
