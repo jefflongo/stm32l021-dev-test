@@ -1,27 +1,36 @@
-# STM32DEV
+# stm32dev
 
-### Debugging STM32 in VS Code (Windows):
+### STM32 Development in VS Code:
 
 #### Prerequisites
-- Install [MinGW](http://www.mingw.org/)
-- Install [arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads) toolchain and add it to your system PATH
-- Install [OpenOCD](https://gnutoolchains.com/arm-eabi/openocd/) and add it to your system PATH
+- Install the following programs and add them to your system PATH
+  - [arm-none-eabi-gcc toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads)
+  - [OpenOCD](https://gnutoolchains.com/arm-eabi/openocd/)
+  - (Windows) [Make for Windows](http://gnuwin32.sourceforge.net/packages/make.htm)
+
+#### Creating a Project
+- Generate a project from [STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html) with the Toolchain / IDE option in the Project Manager set to Makefile.
 
 #### VS Code Configuration
-- Open `C_Cpp_properties.json` configuration
+- Install the Cortex-Debug extension
+- Create a `C_Cpp_properties` configuration
   - Add the following `defines`:
     - `DEBUG`
     - `USE_HAL_DRIVER`
-    - `STM32`**abc**`xx` where **abc** is the model of the target (i.e. F429)
-  - Set the C standard to `c99`
-  - Set the compiler path to the `arm-none-eabi-gcc.exe` location
+    - `STM32...` where **STM32...** is defined by the **`STM32...`**`_HAL_Driver` folder name under `Drivers/`
+  - Set the compiler path to the `arm-none-eabi-gcc` executable location
   - Set the include path to `${workspaceFolder}/**` for recursive inclusion
-- Install the Cortex-Debug extension, and use it to create the `launch.json` debug configuration
-  - Change `executable` to the appropriate executable location  (./build/\<project_name\>.elf)'
-  - Change `servertype` to `openocd`
-  - Add the field `configFiles` and specify the following two .cfg files:
+- Create a `tasks` configuration
+  - Create a task with the following parameters:
+    - `"label": "build",`
+    - `"type": "shell",`
+    - `"command": "make",`
+- Create a `launch` configuration from the Cortex-Debug template
+  - Modify the following parameters:
+    - `executable` to the appropriate executable location  `${workspaceFolder}/build/`**project_name**`.elf`
+    - `servertype` to `openocd`
+  - Add the parameter `configFiles` and specify the following two .cfg files:
     - `interface/`**x**`.cfg` where **x** is the debugger type (i.e. stlink)
     - `target/`**y**`.cfg` where **y** is the target type (i.e. stm32f4x)
-
-#### Building
-The MCU configuration can be generated using [STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html) with the Toolchain / IDE option in the Project Manager set to Makefile. The project can then be built with `mingw32-make`.
+    - Refer to `OpenOCD_install_directory/share/openocd/scripts` to find the correct file names for your platform
+  - Add the parameter `"preLaunchTask": "build",`
