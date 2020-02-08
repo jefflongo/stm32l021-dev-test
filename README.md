@@ -27,10 +27,10 @@
     - `"command": "make",`
 - Create a `launch` configuration from the Cortex-Debug template
   - Modify the following parameters:
-    - `executable` to the appropriate executable location  `${workspaceFolder}/build/`**project_name**`.elf`
+    - `executable` to the appropriate executable location  `${workspaceFolder}/build/`**`project_name`**`.elf`
     - `servertype` to `openocd`
   - Add the parameter `configFiles` and specify the following two .cfg files:
-    - `interface/`**x**`.cfg` where **x** is the debugger type (i.e. stlink)
-    - `target/`**y**`.cfg` where **y** is the target type (i.e. stm32f4x)
+    - `interface/`**`x`**`.cfg` where **x** is the debugger type (i.e. stlink)
+    - `target/`**`y`**`.cfg` where **y** is the target type (i.e. stm32f4x)
     - Refer to `OpenOCD_install_directory/share/openocd/scripts` to find the correct file names for your platform
   - Add the parameter `"preLaunchTask": "build",`
