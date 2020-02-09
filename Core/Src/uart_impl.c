@@ -1,6 +1,7 @@
 #include "uart_impl.h"
 
 #include "board.h"
+#include "gpio.h"
 #include "stm32l0xx_hal.h"
 #include "uart.h"
 
@@ -31,28 +32,25 @@ bool _uart_read_impl(void* buf, uint16_t len) {
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
     if (uartHandle->Instance == USART2) {
-        // USART2 clock enable
         __HAL_RCC_USART2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
-        // USART2 GPIO Configuration
-        // PA9     ------> USART2_TX
-        // PA10     ------> USART2_RX
-        GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_10;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-        GPIO_InitStruct.Alternate = GPIO_AF4_USART2;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+        gpio_config_t config = {
+            .mode = GPIO_MODE_AF_PP,
+            .pull = GPIO_NOPULL,
+            .speed = GPIO_SPEED_FREQ_VERY_HIGH,
+            .af = GPIO_AF4_USART2,
+        };
+        gpio_config_pin(TX_PORT, TX_PIN, &config);
+        gpio_config_pin(RX_PORT, RX_PIN, &config);
     }
 }
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle) {
     if (uartHandle->Instance == USART2) {
-        // USART2 clock disable
         __HAL_RCC_USART2_CLK_DISABLE();
-        // USART2 GPIO Configuration
-        // PA9     ------> USART2_TX
-        // PA10     ------> USART2_RX
-        HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9 | GPIO_PIN_10);
+
+        gpio_unconfig_pin(TX_PORT, TX_PIN);
+        gpio_unconfig_pin(RX_PORT, RX_PIN);
     }
 }

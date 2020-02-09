@@ -40,12 +40,13 @@ Core/Src/board.c \
 Core/Src/ws281x.c \
 Core/Src/stusb4500.c \
 Core/Src/stusb4500_nvm.c \
-Core/Src/main.c \
 Core/Src/gpio.c \
+Core/Src/gpio_impl.c \
 Core/Src/i2c.c \
 Core/Src/i2c_impl.c \
 Core/Src/uart.c \
 Core/Src/uart_impl.c \
+Core/Src/main.c \
 Core/Src/stm32l0xx_it.c \
 Core/Src/stm32l0xx_hal_msp.c \
 Core/Src/system_stm32l0xx.c \

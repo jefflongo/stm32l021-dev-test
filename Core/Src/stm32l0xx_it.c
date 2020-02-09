@@ -141,8 +141,8 @@ void SysTick_Handler(void) {
 void EXTI4_15_IRQHandler(void) {
     /* USER CODE BEGIN EXTI4_15_IRQn 0 */
     HAL_Delay(50);
-    if (HAL_GPIO_ReadPin(BTN_GPIO_Port, BTN_Pin) == GPIO_PIN_RESET) {
-        // HAL_GPIO_TogglePin(LED0_GPIO_Port, LED0_Pin);
+    if (HAL_GPIO_ReadPin(BTN_PORT, BTN_PIN) == GPIO_PIN_RESET) {
+        // HAL_GPIO_TogglePin(LED0_PORT0_PIN);
         stusb_negotiate();
     }
     /* USER CODE END EXTI4_15_IRQn 0 */

@@ -7,7 +7,7 @@
         {
             "name": "Cortex Debug",
             "cwd": "${workspaceRoot}",
-            "executable": "./build/stm32dev.elf",
+            "executable": "${workspaceFolder}/build/stm32dev.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",

@@ -20,7 +20,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "board.h"
+#include "stm32l0xx_hal.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */

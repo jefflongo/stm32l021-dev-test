@@ -3,16 +3,39 @@
 
 #include "stm32l0xx_hal.h"
 
+#include <stdbool.h>
+
 #define LOG
 
 #define DELAY(ms) HAL_Delay(ms)
 
-#define LED0_Pin GPIO_PIN_14
-#define LED0_GPIO_Port GPIOC
-#define BTN_Pin GPIO_PIN_15
-#define BTN_GPIO_Port GPIOC
-#define BTN_EXTI_IRQn EXTI4_15_IRQn
-#define RGB_Pin GPIO_PIN_1
-#define RGB_GPIO_Port GPIOB
+#define RGB_PORT GPIOB
+#define RGB_PIN GPIO_PIN_1
+
+#define LED0_PORT GPIOC
+#define LED0_PIN GPIO_PIN_14
+
+#define TX_PORT GPIOA
+#define TX_PIN GPIO_PIN_9
+#define LED1_PORT GPIOA
+#define LED1_PIN GPIO_PIN_9
+
+#define RX_PORT GPIOA
+#define RX_PIN GPIO_PIN_10
+#define LED2_PORT GPIOA
+#define LED2_PIN GPIO_PIN_10
+
+#define BTN_PORT GPIOC
+#define BTN_PIN GPIO_PIN_15
+#define BTN_IRQ EXTI4_15_IRQn
+
+#define SDA_PORT GPIOB
+#define SDA_PIN GPIO_PIN_7
+
+#define SCL_PORT GPIOB
+#define SCL_PIN GPIO_PIN_6
+
+bool rcc_init();
+void gpio_init();
 
 #endif // BOARD_H

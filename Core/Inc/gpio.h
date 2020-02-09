@@ -1,56 +1,35 @@
-/**
- ******************************************************************************
- * File Name          : gpio.h
- * Description        : This file contains all the functions prototypes for
- *                      the gpio
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
- *
- ******************************************************************************
- */
+#ifndef GPIO_H
+#define GPIO_H
 
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __gpio_H
-#define __gpio_H
-#ifdef __cplusplus
-extern "C" {
-#endif
+// TODO: Make this platform independent
+#include "stm32l0xx_hal.h"
 
-/* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
 
-/* USER CODE BEGIN Includes */
+typedef GPIO_TypeDef* gpio_port_t;
+typedef uint32_t gpio_pin_t;
 
-/* USER CODE END Includes */
+typedef uint32_t gpio_mode_t;
+typedef uint32_t gpio_pull_t;
+typedef uint32_t gpio_speed_t;
+typedef uint32_t gpio_af_t;
 
-/* USER CODE BEGIN Private defines */
+typedef struct {
+    gpio_mode_t mode;
+    gpio_pull_t pull;
+    gpio_speed_t speed;
+    gpio_af_t af;
+} gpio_config_t;
 
-/* USER CODE END Private defines */
+typedef GPIO_PinState gpio_state_t;
 
-void MX_GPIO_Init(void);
+gpio_state_t gpio_get_pin_state(gpio_port_t port, gpio_pin_t pin);
+void gpio_set_pin_state(gpio_port_t port, gpio_pin_t pin, gpio_state_t state);
+void gpio_set_pin_mode(gpio_port_t port, gpio_pin_t pin, gpio_mode_t mode);
+void gpio_set_pin_pull(gpio_port_t port, gpio_pin_t pin, gpio_pull_t pull);
+void gpio_set_pin_speed(gpio_port_t port, gpio_pin_t pin, gpio_speed_t speed);
+void gpio_set_pin_af(gpio_port_t port, gpio_pin_t pin, gpio_af_t af);
+void gpio_config_pin(gpio_port_t port, gpio_pin_t pin, gpio_config_t* config);
+void gpio_unconfig_pin(gpio_port_t port, gpio_pin_t pin);
 
-/* USER CODE BEGIN Prototypes */
-
-/* USER CODE END Prototypes */
-
-#ifdef __cplusplus
-}
-#endif
-#endif /*__ pinoutConfig_H */
-
-/**
- * @}
- */
-
-/**
- * @}
- */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+#endif // GPIO_H
