@@ -1,7 +1,6 @@
 #include "ws281x.h"
 
 #include "board.h"
-#include "gpio.h"
 
 static uint32_t reverse(uint8_t b) {
     b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
@@ -14,7 +13,7 @@ static uint32_t convert_rgb(const ws_color_t color) {
     return (reverse(color.b) << 16) | (reverse(color.r) << 8) | reverse(color.g);
 }
 
-void ws_write(const ws_color_t color) {
+__attribute__((optimize("Og"))) void ws_write(const ws_color_t color) {
     // Hold data line low for 50us to reset LED driver
     RGB_PORT->BRR = RGB_PIN;
     DELAY(50);

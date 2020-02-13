@@ -1,7 +1,6 @@
 #include "uart_impl.h"
 
 #include "board.h"
-#include "gpio.h"
 #include "stm32l0xx_hal.h"
 #include "uart.h"
 
@@ -34,14 +33,14 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
         __HAL_RCC_USART2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();
 
-        gpio_config_t config = {
-            .mode = GPIO_MODE_AF_PP,
-            .pull = GPIO_NOPULL,
-            .speed = GPIO_SPEED_FREQ_VERY_HIGH,
-            .af = GPIO_AF4_USART2,
+        GPIO_InitTypeDef config = {
+            .Pin = TX_PIN | RX_PIN,
+            .Mode = GPIO_MODE_AF_PP,
+            .Pull = GPIO_NOPULL,
+            .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+            .Alternate = GPIO_AF4_USART2,
         };
-        gpio_config_pin(TX_PORT, TX_PIN, &config);
-        gpio_config_pin(RX_PORT, RX_PIN, &config);
+        HAL_GPIO_Init(TX_PORT, &config);
     }
 }
 
@@ -49,7 +48,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle) {
     if (uartHandle->Instance == USART2) {
         __HAL_RCC_USART2_CLK_DISABLE();
 
-        gpio_unconfig_pin(TX_PORT, TX_PIN);
-        gpio_unconfig_pin(RX_PORT, RX_PIN);
+        HAL_GPIO_DeInit(TX_PORT, TX_PIN);
+        HAL_GPIO_DeInit(RX_PORT, RX_PIN);
     }
 }

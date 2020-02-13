@@ -1,7 +1,5 @@
 #include "timer.h"
 
-#include "stm32l0xx_hal.h"
-
 TIM_HandleTypeDef htim2;
 
 bool timer_init(void) {
@@ -12,7 +10,7 @@ bool timer_init(void) {
     htim2.Instance = TIM2;
     htim2.Init.Prescaler = 8191;
     htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim2.Init.Period = 499;
+    htim2.Init.Period = 999;
     htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
     htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
     if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
@@ -39,22 +37,4 @@ bool timer_init(void) {
     }
 
     return true;
-}
-
-void timer_start(void) {
-    HAL_TIM_Base_Start_IT(&htim2);
-}
-
-void timer_stop(void) {
-    HAL_TIM_Base_Stop_IT(&htim2);
-    htim2.Instance->CNT = 0;
-}
-
-void timer_handle_event(void) {
-    HAL_TIM_IRQHandler(&htim2);
-}
-
-void timer_clear(void) {
-    htim2.Instance->CNT = 0;
-    __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_CC1);
 }

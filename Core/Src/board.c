@@ -1,6 +1,5 @@
 #include "board.h"
 
-#include "gpio.h"
 #include "uart.h"
 
 #include <errno.h>
@@ -57,38 +56,42 @@ void gpio_init(void) {
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_TIM2_CLK_ENABLE();
 
-    gpio_config_t config;
+    GPIO_InitTypeDef config;
 
-    config.mode = GPIO_MODE_OUTPUT_PP;
-    config.pull = GPIO_NOPULL;
-    config.speed = GPIO_SPEED_FREQ_LOW;
-    gpio_set_pin_state(LED0_PORT, LED0_PIN, GPIO_PIN_RESET);
-    // gpio_set_pin_state(LED1_PORT, LED1_PIN, GPIO_PIN_RESET);
-    // gpio_set_pin_state(LED2_PORT, LED2_PIN, GPIO_PIN_RESET);
-    gpio_config_pin(LED0_PORT, LED0_PIN, &config);
-    // gpio_config_pin(LED1_PORT, LED1_PIN, &config);
-    // gpio_config_pin(LED2_PORT, LED2_PIN, &config);
+    config.Pin = LED0_PIN;
+    config.Mode = GPIO_MODE_OUTPUT_PP;
+    config.Pull = GPIO_NOPULL;
+    config.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_WritePin(LED0_PORT, LED0_PIN, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_RESET);
+    HAL_GPIO_Init(LED0_PORT, &config);
+    // HAL_GPIO_Init(LED1_PORT, LED1_PIN, &config);
+    // HAL_GPIO_Init(LED2_PORT, LED2_PIN, &config);
 
-    config.mode = GPIO_MODE_OUTPUT_PP;
-    config.pull = GPIO_NOPULL;
-    config.speed = GPIO_SPEED_FREQ_MEDIUM;
-    gpio_set_pin_state(RGB_PORT, RGB_PIN, GPIO_PIN_RESET);
-    gpio_config_pin(RGB_PORT, RGB_PIN, &config);
+    config.Pin = RGB_PIN;
+    config.Mode = GPIO_MODE_OUTPUT_PP;
+    config.Pull = GPIO_NOPULL;
+    config.Speed = GPIO_SPEED_FREQ_MEDIUM;
+    HAL_GPIO_WritePin(RGB_PORT, RGB_PIN, GPIO_PIN_RESET);
+    HAL_GPIO_Init(RGB_PORT, &config);
 
-    config.mode = GPIO_MODE_IT_FALLING;
-    config.pull = GPIO_NOPULL;
-    config.speed = GPIO_SPEED_FREQ_LOW;
-    gpio_config_pin(BTN_PORT, BTN_PIN, &config);
+    config.Pin = BTN_PIN;
+    config.Mode = GPIO_MODE_IT_FALLING;
+    config.Pull = GPIO_NOPULL;
+    config.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(BTN_PORT, &config);
 
-    config.mode = GPIO_MODE_IT_FALLING;
-    config.pull = GPIO_PULLUP;
-    config.speed = GPIO_SPEED_FREQ_LOW;
-    gpio_config_pin(CABLE_DET_PORT, CABLE_DET_PIN, &config);
+    config.Pin = CABLE_DET_PIN;
+    config.Mode = GPIO_MODE_IT_FALLING;
+    config.Pull = GPIO_PULLUP;
+    config.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(CABLE_DET_PORT, &config);
 }
 
 void nvic_init(void) {
-    HAL_NVIC_SetPriority(CABLE_DET_IRQ, 1, 0);
-    HAL_NVIC_EnableIRQ(CABLE_DET_IRQ);
+    HAL_NVIC_SetPriority(BTN_IRQ, 1, 0);
+    HAL_NVIC_EnableIRQ(BTN_IRQ);
 
     HAL_NVIC_SetPriority(CABLE_DET_IRQ, 1, 0);
     HAL_NVIC_EnableIRQ(CABLE_DET_IRQ);

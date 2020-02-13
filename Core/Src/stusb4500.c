@@ -59,8 +59,10 @@
 #define TO_PDO_CURRENT(mA) ((mA / 10) & 0x03FF)
 #define TO_PDO_VOLTAGE(mV) ((uint32_t)((mV / 50) & 0x03FF) << 10)
 
+// Timeout period for plug detection
+#define PLUG_TIMEOUT 3000
 // Timeout period for retrieving source capabilities
-#define TIMEOUT 500
+#define RETRIEVE_TIMEOUT 500
 
 /* TODO: This doesn't work, STUSB4500 likely doesn't support this, need to verify
 static bool send_pd_message(const uint16_t msg) {
@@ -147,21 +149,26 @@ static bool load_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
 
 #ifdef LOG
     printf(
-      "\r\nSelected optimal PDO based on user parameters: %d.%03dV - %d.%03dV, >= %d.%03dA\r\n",
+      "\r\nSelecting optimal PDO based on user parameters: %d.%03dV - %d.%03dV, >= "
+      "%d.%03dA\r\n",
       (int)(PDO_VOLTAGE_MIN / 1000),
       (int)(PDO_VOLTAGE_MIN % 1000),
       (int)(PDO_VOLTAGE_MAX / 1000),
       (int)(PDO_VOLTAGE_MAX % 1000),
       (int)(PDO_CURRENT_MIN / 1000),
       (int)(PDO_CURRENT_MIN % 1000));
-    printf(
-      "Selected PDO: %d.%03dV, %d.%03dA, %d.%03dW\r\n\r\n",
-      (int)(opt_pdo_voltage / 1000),
-      (int)(opt_pdo_voltage % 1000),
-      (int)(opt_pdo_current / 1000),
-      (int)(opt_pdo_current % 1000),
-      (int)(opt_pdo_power / 1000),
-      (int)(opt_pdo_power % 1000));
+    if (ok) {
+        printf(
+          "Selected PDO: %d.%03dV, %d.%03dA, %d.%03dW\r\n\r\n",
+          (int)(opt_pdo_voltage / 1000),
+          (int)(opt_pdo_voltage % 1000),
+          (int)(opt_pdo_current / 1000),
+          (int)(opt_pdo_current % 1000),
+          (int)(opt_pdo_power / 1000),
+          (int)(opt_pdo_power % 1000));
+    } else {
+        printf("No suitable PDO found\r\n\r\n");
+    }
 #endif
 
     // Push the new PDO
@@ -178,9 +185,16 @@ bool stusb_negotiate(bool on_interrupt) {
     uint16_t header;
     uint32_t time = GET_MS();
 
+    // Provide a buffer for cable attachment
+    while (1) {
+        if (GET_MS() - time >= PLUG_TIMEOUT) return false;
+        if (i2c_master_read_u8(STUSB_ADDR, PORT_STATUS, buffer) && (buffer[0] & ATTACH)) break;
+    }
+
+    time = GET_MS();
     while (1) {
         // Check for timeout
-        if (GET_MS() - time >= TIMEOUT) return false;
+        if (GET_MS() - time >= RETRIEVE_TIMEOUT) return false;
 
         // Read the port status to look for a source capabilities message
         if (!i2c_master_read_u8(STUSB_ADDR, PRT_STATUS, buffer)) return false;

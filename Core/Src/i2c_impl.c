@@ -1,7 +1,6 @@
 #include "i2c_impl.h"
 
 #include "board.h"
-#include "gpio.h"
 #include "i2c.h"
 #include "stm32l0xx_hal.h"
 
@@ -44,15 +43,15 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* i2cHandle) {
     if (i2cHandle->Instance == I2C1) {
         __HAL_RCC_GPIOB_CLK_ENABLE();
 
-        gpio_config_t config = {
-            .mode = GPIO_MODE_AF_OD,
-            .pull = GPIO_PULLUP,
-            .speed = GPIO_SPEED_FREQ_VERY_HIGH,
-            .af = GPIO_AF1_I2C1,
+        GPIO_InitTypeDef config = {
+            .Pin = SDA_PIN | SCL_PIN,
+            .Mode = GPIO_MODE_AF_OD,
+            .Pull = GPIO_PULLUP,
+            .Speed = GPIO_SPEED_FREQ_VERY_HIGH,
+            .Alternate = GPIO_AF1_I2C1,
         };
-        gpio_config_pin(SDA_PORT, SDA_PIN, &config);
-        gpio_config_pin(SCL_PORT, SCL_PIN, &config);
-
+        HAL_GPIO_Init(SDA_PORT, &config);
+        HAL_GPIO_Init(SCL_PORT, &config);
         __HAL_RCC_I2C1_CLK_ENABLE();
     }
 }
@@ -61,7 +60,7 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle) {
     if (i2cHandle->Instance == I2C1) {
         __HAL_RCC_I2C1_CLK_DISABLE();
 
-        gpio_unconfig_pin(SDA_PORT, SDA_PIN);
-        gpio_unconfig_pin(SCL_PORT, SCL_PIN);
+        HAL_GPIO_DeInit(SDA_PORT, SDA_PIN);
+        HAL_GPIO_DeInit(SCL_PORT, SCL_PIN);
     }
 }

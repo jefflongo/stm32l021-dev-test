@@ -39,9 +39,6 @@ C_SOURCES =  \
 Core/Src/board.c \
 Core/Src/ws281x.c \
 Core/Src/stusb4500.c \
-Core/Src/stusb4500_nvm.c \
-Core/Src/gpio.c \
-Core/Src/gpio_impl.c \
 Core/Src/i2c.c \
 Core/Src/i2c_impl.c \
 Core/Src/uart.c \
