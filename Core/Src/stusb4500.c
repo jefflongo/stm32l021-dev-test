@@ -59,6 +59,9 @@
 #define TO_PDO_CURRENT(mA) ((mA / 10) & 0x03FF)
 #define TO_PDO_VOLTAGE(mV) ((uint32_t)((mV / 50) & 0x03FF) << 10)
 
+// Timeout period for retrieving source capabilities
+#define TIMEOUT 500
+
 /* TODO: This doesn't work, STUSB4500 likely doesn't support this, need to verify
 static bool send_pd_message(const uint16_t msg) {
     bool ok = true;
@@ -100,14 +103,10 @@ static bool write_pdo(uint16_t current_mA, uint16_t voltage_mV, uint8_t pdo_num)
     uint32_t pdo = TO_PDO_CURRENT(current_mA) | TO_PDO_VOLTAGE(voltage_mV);
 
     // Write the sink PDO
-    if (!i2c_master_write_u32(STUSB_ADDR, DPM_SNK_PDO1 + PDO_SIZE * (pdo_num - 1), pdo))
-        return false;
-
-    // Force a renegotiation
-    return reset();
+    return i2c_master_write_u32(STUSB_ADDR, DPM_SNK_PDO1 + PDO_SIZE * (pdo_num - 1), pdo);
 }
 
-static bool negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
+static bool load_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
     bool ok = false;
 
     uint16_t opt_pdo_current = 0;
@@ -171,17 +170,18 @@ static bool negotiate_optimal_pdo(uint32_t* src_pdos, uint8_t num_pdos) {
     return ok;
 }
 
-bool stusb_negotiate(void) {
+bool stusb_negotiate(bool on_interrupt) {
+    // Force transmission of source capabilities if not responding to an ATTACH interrupt
+    if (!on_interrupt && !reset()) return false;
+
     uint8_t buffer[MAX_SRC_PDOS * PDO_SIZE];
     uint16_t header;
-
-    // Check if cable attached
-    if (!i2c_master_read_u8(STUSB_ADDR, PORT_STATUS, buffer) || !(buffer[0] & ATTACH)) return false;
-
-    // Soft reset to force source capabilities message transmission
-    if (!reset()) return false;
+    uint32_t time = GET_MS();
 
     while (1) {
+        // Check for timeout
+        if (GET_MS() - time >= TIMEOUT) return false;
+
         // Read the port status to look for a source capabilities message
         if (!i2c_master_read_u8(STUSB_ADDR, PRT_STATUS, buffer)) return false;
 
@@ -212,7 +212,10 @@ bool stusb_negotiate(void) {
           STUSB_ADDR, RX_DATA_OBJ, buffer, HEADER_NUM_DATA_OBJECTS(header) * PDO_SIZE))
         return false;
 
-    // Find and negotiate the optimal PDO, if any
+    // Find and load the optimal PDO, if any
+    if (!load_optimal_pdo((uint32_t*)buffer, HEADER_NUM_DATA_OBJECTS(header))) return false;
+
+    // Force a renegotiation
     // NOTE: vbus will be momentarily lost
-    return negotiate_optimal_pdo((uint32_t*)buffer, HEADER_NUM_DATA_OBJECTS(header));
+    return reset();
 }

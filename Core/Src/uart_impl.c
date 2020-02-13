@@ -30,7 +30,6 @@ bool _uart_read_impl(void* buf, uint16_t len) {
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle) {
-    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
     if (uartHandle->Instance == USART2) {
         __HAL_RCC_USART2_CLK_ENABLE();
         __HAL_RCC_GPIOA_CLK_ENABLE();

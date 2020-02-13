@@ -55,6 +55,7 @@ void gpio_init(void) {
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_TIM2_CLK_ENABLE();
 
     gpio_config_t config;
 
@@ -78,9 +79,20 @@ void gpio_init(void) {
     config.pull = GPIO_NOPULL;
     config.speed = GPIO_SPEED_FREQ_LOW;
     gpio_config_pin(BTN_PORT, BTN_PIN, &config);
+
+    config.mode = GPIO_MODE_IT_FALLING;
+    config.pull = GPIO_PULLUP;
+    config.speed = GPIO_SPEED_FREQ_LOW;
+    gpio_config_pin(CABLE_DET_PORT, CABLE_DET_PIN, &config);
 }
 
 void nvic_init(void) {
-    HAL_NVIC_SetPriority(BTN_IRQ, 1, 0);
-    HAL_NVIC_EnableIRQ(BTN_IRQ);
+    HAL_NVIC_SetPriority(CABLE_DET_IRQ, 1, 0);
+    HAL_NVIC_EnableIRQ(CABLE_DET_IRQ);
+
+    HAL_NVIC_SetPriority(CABLE_DET_IRQ, 1, 0);
+    HAL_NVIC_EnableIRQ(CABLE_DET_IRQ);
+
+    HAL_NVIC_SetPriority(TIMER_IRQ, 2, 0);
+    HAL_NVIC_EnableIRQ(TIMER_IRQ);
 }

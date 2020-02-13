@@ -8,6 +8,6 @@
 #define PDO_VOLTAGE_MIN 5000  // mV, 50mV increments
 #define PDO_VOLTAGE_MAX 12000 // mV, 50mV increments
 
-bool stusb_negotiate(void);
+bool stusb_negotiate(bool on_interrupt);
 
 #endif // STUSB4500_H

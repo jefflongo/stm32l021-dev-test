@@ -7,6 +7,7 @@
 
 #define LOG
 
+#define GET_MS() HAL_GetTick()
 #define DELAY(ms) HAL_Delay(ms)
 
 #define RGB_PORT GPIOB
@@ -29,6 +30,12 @@
 #define BTN_PIN GPIO_PIN_15
 #define BTN_IRQ EXTI4_15_IRQn
 
+#define CABLE_DET_PORT GPIOA
+#define CABLE_DET_PIN GPIO_PIN_0
+#define CABLE_DET_IRQ EXTI0_1_IRQn
+
+#define TIMER_IRQ TIM2_IRQn
+
 #define SDA_PORT GPIOB
 #define SDA_PIN GPIO_PIN_7
 
@@ -37,5 +44,6 @@
 
 bool rcc_init();
 void gpio_init();
+void nvic_init();
 
 #endif // BOARD_H

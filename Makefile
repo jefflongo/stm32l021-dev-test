@@ -22,7 +22,7 @@ TARGET = stm32dev
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -Os
 
 
 #######################################
@@ -46,6 +46,7 @@ Core/Src/i2c.c \
 Core/Src/i2c_impl.c \
 Core/Src/uart.c \
 Core/Src/uart_impl.c \
+Core/Src/timer.c \
 Core/Src/main.c \
 Core/Src/stm32l0xx_it.c \
 Core/Src/stm32l0xx_hal_msp.c \
